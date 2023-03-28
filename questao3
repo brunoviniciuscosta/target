@@ -1,0 +1,78 @@
+package faturamento;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.io.FileReader;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONArray;
+
+
+public class Faturamento {
+  public static void main(String[] args) throws Exception {
+    List<DiaFaturamento> lista = lerJson("dados.json");
+    calcular(lista);
+  }
+
+  public static List<DiaFaturamento> lerJson(String filePath) throws Exception {
+    JSONParser parser = new JSONParser();
+    List<DiaFaturamento> lista = new ArrayList<>();
+    FileReader reader = new FileReader(filePath);
+    Object obj = parser.parse(reader);
+    JSONArray jsonArray = (JSONArray) obj;
+    for (Object object : jsonArray) {
+      JSONObject jsonObject = (JSONObject) object;
+      DiaFaturamento dia = new DiaFaturamento();
+      dia.setDia((int) (long) jsonObject.get("dia"));
+      dia.setValor((double) jsonObject.get("valor"));
+      lista.add(dia);
+    }
+    reader.close();
+    return lista;
+  }
+
+  public static void calcular(List<DiaFaturamento> lista) {
+    int dias = 0;
+    double soma = 0;
+    double max = Double.MIN_VALUE;
+    double min = Double.MAX_VALUE;
+    for (DiaFaturamento dia : lista) {
+      double valor = dia.getValor();
+      if (valor < min) min = valor;
+      if (valor > max) max = valor;
+      if (valor != 0) dias += 1;
+      soma += valor;
+    }
+    double media = soma / dias;
+
+    System.out.println("Menor valor de faturamento do mês: " + min);
+    System.out.println("Maior valor de faturamento do mês: " + max);
+
+    int diasAcimaMedia = 0;
+    for (DiaFaturamento dia : lista) {
+      if (dia.getValor() > media) diasAcimaMedia += 1;
+    }
+    System.out.println("Número de dias em que o valor de faturamento foi superior à média mensal: " + diasAcimaMedia);
+  }
+}
+
+class DiaFaturamento {
+  private int dia;
+  private double valor;
+
+  public int getDia() {
+    return dia;
+  }
+
+  public void setDia(int dia) {
+    this.dia = dia;
+  }
+
+  public double getValor() {
+    return valor;
+  }
+
+  public void setValor(double valor) {
+    this.valor = valor;
+  }
+}
